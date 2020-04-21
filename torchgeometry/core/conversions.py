@@ -344,7 +344,7 @@ def quaternion_to_angle_axis(quaternion: torch.Tensor) -> torch.Tensor:
     q1: torch.Tensor = quaternion[..., 1]
     q2: torch.Tensor = quaternion[..., 2]
     q3: torch.Tensor = quaternion[..., 3]
-    sin_squared_theta: torch.Tensor = q1 * q1 + q2 * q2 + q3 * q3
+    sin_squared_theta: torch.Tensor = torch.clamp(q1 * q1 + q2 * q2 + q3 * q3, min=1e-8)
 
     sin_theta: torch.Tensor = torch.sqrt(sin_squared_theta)
     cos_theta: torch.Tensor = quaternion[..., 0]
@@ -353,7 +353,7 @@ def quaternion_to_angle_axis(quaternion: torch.Tensor) -> torch.Tensor:
         torch.atan2(-sin_theta, -cos_theta),
         torch.atan2(sin_theta, cos_theta))
 
-    k_pos: torch.Tensor = two_theta / sin_theta
+    k_pos: torch.Tensor = two_theta / torch.clamp(sin_theta, min=1e-8)
     k_neg: torch.Tensor = 2.0 * torch.ones_like(sin_theta)
     k: torch.Tensor = torch.where(sin_squared_theta > 0.0, k_pos, k_neg)
 
